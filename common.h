@@ -12,6 +12,7 @@
 #include <linux/types.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <string>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <string.h>

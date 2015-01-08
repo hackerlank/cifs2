@@ -39,7 +39,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/main.o \
 	${OBJECTDIR}/myiconv.o \
 	${OBJECTDIR}/readdir.o \
-	${OBJECTDIR}/smb_commands.o \
+	${OBJECTDIR}/smb_command.o \
 	${OBJECTDIR}/trans2.o \
 	${OBJECTDIR}/trans2_subcommand.o
 
@@ -88,10 +88,10 @@ ${OBJECTDIR}/readdir.o: readdir.cpp
 	${RM} "$@.d"
 	$(COMPILE.cc) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/readdir.o readdir.cpp
 
-${OBJECTDIR}/smb_commands.o: smb_commands.c 
+${OBJECTDIR}/smb_command.o: smb_command.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/smb_commands.o smb_commands.c
+	$(COMPILE.cc) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/smb_command.o smb_command.cpp
 
 ${OBJECTDIR}/trans2.o: trans2.cpp 
 	${MKDIR} -p ${OBJECTDIR}

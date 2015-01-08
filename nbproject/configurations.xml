@@ -19,7 +19,7 @@
       <itemPath>main.cpp</itemPath>
       <itemPath>myiconv.cpp</itemPath>
       <itemPath>readdir.cpp</itemPath>
-      <itemPath>smb_commands.c</itemPath>
+      <itemPath>smb_command.cpp</itemPath>
       <itemPath>trans2.cpp</itemPath>
       <itemPath>trans2_subcommand.cpp</itemPath>
     </logicalFolder>
@@ -72,7 +72,7 @@
       </item>
       <item path="readdir.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="smb_commands.c" ex="false" tool="1" flavor2="0">
+      <item path="smb_command.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="smb_commands.h" ex="false" tool="3" flavor2="0">
       </item>
@@ -129,7 +129,7 @@
       </item>
       <item path="readdir.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="smb_commands.c" ex="false" tool="1" flavor2="0">
+      <item path="smb_command.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="smb_commands.h" ex="false" tool="3" flavor2="0">
       </item>

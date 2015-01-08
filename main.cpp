@@ -9,8 +9,11 @@
 #include <cstdlib>
 #include <iostream>
 #include <string>
+#include <vector>
+#include <map>
 #include "mem.h"
 #include "common.h"
+#include "smb_commands.h"
 using namespace std;
 
 /*
@@ -19,8 +22,8 @@ using namespace std;
 vector<SESSION> ses;
 int server_fd;
 struct epoll_event ev,events[EPOLL_SIZE];
-
-int handle_message(SESSION *sess);
+void *client_get_message(void *arg);
+void *handle_message(SESSION *sess);
 void *epoll_listen(void *arg)
 {
     printf("aaaaaaa\n");
@@ -44,14 +47,21 @@ void *epoll_listen(void *arg)
                 ev.data.fd = clientfd;
                 ev.events = EPOLLIN;
                 CHK(epoll_ctl(epfd, EPOLL_CTL_ADD, clientfd, &ev));
+                SESSION sess(clientfd);
+                //sess._cfd = clientfd;
+                ses.push_back(sess);
+                cout<<"a new client come in,the fd is"<<sess._cfd<<endl;
             }
             else{
-                pid_t tid;
-                SESSION sess;
-                sess._cfd = events[i].data.fd;
-                ses.push_back(sess);
-                pthread_create(&tid,NULL,client_get_message,&sess);
+                for(int j=0;j<ses.size();j++)
+                {
+                    if(ses[j]._cfd=events[i].data.fd)
+                    {
+                        handle_message(&ses[j]);
+                        break;
+                    }
                 //CHK2(res,handle_message(events[i].data.fd))
+                }
             }
         }
     }
@@ -90,20 +100,22 @@ int main(int argc, char** argv) {
     while(1);
     return 0;
 }
-int client_get_message(void *arg)
+void *client_get_message(void *arg)
 {
     int ret;
     SESSION *sess = (SESSION*)arg;
-    cout<<"a new client come in,the fd is"<<sess->_cfd<<endl;
-    unsigned int head;
-    CHK2(ret,read(sess->_cfd,&head,4),);
-    sess->relloc_buf(ntohl(head));
-    
+    handle_message(sess);
 }
-int handle_message(SESSION *sess)
+void *handle_message(SESSION *sess)
 {
-    
-    //memcpy()
+    unsigned int head;
+    int ret;
+    CHK3(ret,read(sess->_cfd,&head,4),"read in client_get_message_head!");
+    sess->_len = ntohl(head);
+    sess->relloc_buf();
+    CHK3(ret,read(sess->_cfd,sess->_buf,sess->_len),"read in client_get_message_message!");
+    sess->fill_head();
+    do_command_map(sess);
 }
 
 

@@ -35,8 +35,13 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 
 # Object Files
 OBJECTFILES= \
+	${OBJECTDIR}/file_attr.o \
 	${OBJECTDIR}/main.o \
-	${OBJECTDIR}/smb_commands.o
+	${OBJECTDIR}/myiconv.o \
+	${OBJECTDIR}/readdir.o \
+	${OBJECTDIR}/smb_commands.o \
+	${OBJECTDIR}/trans2.o \
+	${OBJECTDIR}/trans2_subcommand.o
 
 
 # C Compiler Flags
@@ -63,15 +68,40 @@ ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/cifs_server_2: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
 	${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/cifs_server_2 ${OBJECTFILES} ${LDLIBSOPTIONS}
 
+${OBJECTDIR}/file_attr.o: file_attr.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/file_attr.o file_attr.cpp
+
 ${OBJECTDIR}/main.o: main.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/main.o main.cpp
 
+${OBJECTDIR}/myiconv.o: myiconv.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/myiconv.o myiconv.cpp
+
+${OBJECTDIR}/readdir.o: readdir.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/readdir.o readdir.cpp
+
 ${OBJECTDIR}/smb_commands.o: smb_commands.c 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/smb_commands.o smb_commands.c
+
+${OBJECTDIR}/trans2.o: trans2.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/trans2.o trans2.cpp
+
+${OBJECTDIR}/trans2_subcommand.o: trans2_subcommand.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/trans2_subcommand.o trans2_subcommand.cpp
 
 # Subprojects
 .build-subprojects:

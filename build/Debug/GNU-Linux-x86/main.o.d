@@ -1,10 +1,14 @@
-build/Debug/GNU-Linux-x86/main.o: main.cpp mem.h common.h cifspdu.h \
- smbfsctl.h
+build/Debug/GNU-Linux-x86/main.o: main.cpp mem.h common.h cmdstruct.h \
+ cifspdu.h smbfsctl.h smb_commands.h
 
 mem.h:
 
 common.h:
 
+cmdstruct.h:
+
 cifspdu.h:
 
 smbfsctl.h:
+
+smb_commands.h:

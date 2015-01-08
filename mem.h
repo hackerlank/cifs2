@@ -11,6 +11,7 @@
 #include <string>
 #ifndef MEMORY_H
 #define	MEMORY_H
+#pragma pack(1)
 class Mnew
 {
 private:
@@ -59,5 +60,6 @@ class S_ptr
                 delete _ptr;
             }
 };
+#pragma pack()
 #endif	/* MEMORY_H */
 

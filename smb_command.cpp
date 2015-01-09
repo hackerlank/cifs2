@@ -40,6 +40,9 @@ void do_close(SESSION *sess)
     rpdata04 data04r;
     memcpy(&para04,sess->getbuf(),sizeof(para04));
     close(para04.words.FID);
+    map<int,string>::iterator it;
+    it = sess->filelink.find(para04.words.FID);
+    sess->filelink.erase(it);
     memcpy(&data04,sess->getbuf()+sizeof(para04),sizeof(data04));
     
     sess->_writehead.MID = sess->_head.MID;
@@ -310,7 +313,7 @@ void do_NT_CREATE_ANDX(SESSION *sess)//0xA2
     char name[100] = {0};
     char longname[200] = {0};
     int fid = 0;//the file fid
-    UnicodeToUtf8(dataA2.bytes.filename,name,&len,&len2);
+    UnicodeToUtf8(dataA2.bytes.filename+1,name,&len,&len2);
     /*RootDirectoryFID (4 bytes):  If nonzero, this value is the File ID of an opened root directory, and 
 the FileName field MUST be handled as relative to the directory specified by this RootDirectoryFID. If 
 this value is 0x00000000, the FileName field MUST be handled as relative to the root of the share 
@@ -350,7 +353,7 @@ this value is 0x00000000, the FileName field MUST be handled as relative to the 
         if(it==sess->filelink.end())
         {
             fid = open(longname,paraA2.words.DesiredAccess|O_CREAT);
-            sess->filelink[fid] == string(longname);
+            sess->filelink[fid] = string(longname);
         }
     }
     /*AllocationSize (8 bytes):  The client MUST set this value to the initial allocation size of the file in 
@@ -396,6 +399,10 @@ void do_write_andx(SESSION *sess)//0x2F
     }
     else
         memcpy(data2F.bytes.Data,sess->_buf+para2F.words.DataOffset,sizeof(data2F));
+    lseek(para2F.words.FID,para2F.words.Offset,SEEK_SET);//set the offset of file
+    map<int,string>::iterator it;
+    it = sess->filelink.find(para2F.words.FID);
+    truncate(it->second.c_str(),para2F.words.DataLength);
     write(para2F.words.FID,data2F.bytes.Data,para2F.words.DataLength);
     printf("getRequest0x2F,readbytes:%d\n",sess->_writelen);
     
@@ -408,6 +415,9 @@ void do_write_andx(SESSION *sess)//0x2F
     sess->_writelen = ntohl(rh);
     memcpy(&para2Fr,writebuf+4+sizeof(smbhead_t),sizeof(para2Fr));
     memcpy(&data2Fr,writebuf+4+sizeof(smbhead_t)+sizeof(para2Fr),sizeof(data2Fr));
+    para2Fr.words.Count = para2F.words.DataLength;
+    para2Fr.words.Available = 0xffff;
+    memcpy(writebuf+4+sizeof(smbhead_t),&para2Fr,sizeof(para2Fr));
     CHK3(ret,write(sess->_cfd,writebuf,ntohl(rh)+4),"sendResponse0x2F");
     printf("sendResponse0x2F,writebytes:%d\n",ret);
 
@@ -487,5 +497,6 @@ void do_echo(SESSION *sess)//0x2b
     memcpy(writebuf+36+sizeof(para2br),&data2br,2);
     memcpy(writebuf+38+sizeof(para2br),data,data2br.bytecount);
     CHK3(ret,write(sess->_cfd,writebuf,rh+4),"sendResponse0x2E");
+    free(data);
     printf("sendResponse0x2B,writebytes:%d\n",ret);
 }

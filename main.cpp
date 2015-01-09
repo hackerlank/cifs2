@@ -14,6 +14,7 @@
 #include "mem.h"
 #include "common.h"
 #include "smb_commands.h"
+#include "myiconv.h"
 using namespace std;
 
 /*
@@ -68,8 +69,17 @@ void *epoll_listen(void *arg)
     close(server_fd);
     close(epfd);
 }
+void sswswswswswsswswws()
+{
+    char s[100] = {0};
+    char d[100] = "0200000032000000a4810000000000000002";
+    sscanf(d,"%2x",&s[0]);
+    getchar();
+}
 int main(int argc, char** argv) {
-
+    //sswswswswswsswswws();
+    char s[100]="0200000032000000a4810000000000000002",d[100] = {0};
+    itostr(s,d);
     server_fd = socket(AF_INET,SOCK_STREAM,0);
     if(server_fd<0)
         perror("socket");

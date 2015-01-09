@@ -58,4 +58,18 @@ int UnicodeToUtf8(char * inbuff,char *outbuff, size_t *inlen, size_t *outlen)
     return 0;
     
 }
-
+//void tscanf(char *s,int len)
+//{
+//    char s[100] = {0};
+//    sscanf("0f","%x",&s[0]);
+//    getchar();
+//}
+int itostr(char *value,char *str)
+{
+    int len = strlen(value);
+    int a;
+    for(int i=0;i<len/2;i++)
+    {
+        sscanf(value+2*i,"%2x",&str[i]);
+    }
+}

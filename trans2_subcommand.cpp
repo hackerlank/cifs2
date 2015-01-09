@@ -5,6 +5,7 @@
 #include "trans2.h"
 #include "myiconv.h"
 #include "readdir.h"
+using namespace std;
 int trans2_sub3_0x001(SESSION *sess,rqpara32 *para32,rqdata32 *data32,rppara32 *para32r,rpdata32 *data32r)
 {
     sess->_writelen = 74;
@@ -178,6 +179,15 @@ int trans2_sub5_0x200(SESSION *sess,rqpara32 *para32,rqdata32 *data32,rppara32 *
 }
 int trans2_sub6_0x209(SESSION *sess,rqpara32 *para32,rqdata32 *data32,rppara32 *para32r,rpdata32 *data32r)//setup = 6 0x209
 {
+    //test
+    struct FILEINFO_UNIX_BASIC basic2 = {0};
+        OPEN_PSX_RSP data11;
+    char f[] = "0100a3310200000000020000000000000000000000000000000000006dbf105fbd2bd001acea0e5fbd2bd001acea0e5fbd2bd001f501000000000000f5010000000000000000000000000000000000000000000000000000680b240000000000a4010000000000000100000000000000";
+    char t[200] = {0};
+    itostr(f,t);
+    memcpy(&data11,t,sizeof(data11));
+    memcpy(&basic2,t+sizeof(data11),sizeof(basic2));
+    //end of test
     struct Trans2_Parameters6 para6;
     ZERO(para6);
     char unicodename[100] = {0};
@@ -194,11 +204,10 @@ int trans2_sub6_0x209(SESSION *sess,rqpara32 *para32,rqdata32 *data32,rppara32 *
     OPEN_PSX_REQ data6;
     ZERO(data6);
     memcpy(&data6,sess->_buf+para32->words.DataOffset,para32->words.DataCount);
-
-
+    int fid;
     unsigned int rh;
     char writebuf[1024] = "\000\000\000\254\377SMB2\000\000\000\000\200\003\300\000\000\000\000\000\000\000\000\000\000\000\000\001\000\237Yd\000\b\000\n\002\000p\000\000\000\002\000\070\000\000\000p\000<\000\000\000\000\000u\000\000\000\000\000\000\001\000BE\001\000\000\000\000\002\000\000\006\000\000\000\000\000\000\000\000\020\000\000\000\000\000\000\217\346#\252\211\017\320\001\022\324\200\274\211\017\320\001\217\346#\252\211\017\320\001\364\001\000\000\000\000\000\000\364\001\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\245\000$\000\000\000\000\000\377\001\000\000\000\000\000\000\001\000\000\000\000\000";
-    memcpy(&rh,writebuf,4);
+        memcpy(&rh,writebuf,4);
     sess->_writelen = ntohl(rh);
 //    memcpy(smbw,writebuf+4,sizeof(smbhead_t));
 //    smbw->MID = smbr->MID;
@@ -215,7 +224,6 @@ int trans2_sub6_0x209(SESSION *sess,rqpara32 *para32,rqdata32 *data32,rppara32 *
     memcpy(&data,writebuf+4+para32r->words.DataOffset,para32r->words.DataCount);
 */
 
-
     OPEN_PSX_RSP data;
     ZERO(data);
     bzero(para32r,sizeof(*para32r));
@@ -223,7 +231,34 @@ int trans2_sub6_0x209(SESSION *sess,rqpara32 *para32,rqdata32 *data32,rppara32 *
     struct FILEINFO_UNIX_BASIC basic = {0};
     umask((mode_t)data6.Permissions);
     int a=data6.Permissions&0x1FF;
-    int fid = open(longname,O_RDWR|O_CREAT);
+    //int fid = open(longname,O_RDWR|O_CREAT);
+    map<int,string>::iterator it;
+    for(it = sess->filelink.begin();it!=sess->filelink.end();it++)
+    {
+        if(0==strcmp(it->second.c_str(),longname))
+        {
+            fid = it->first;
+            break;
+        }
+    }
+    if(it==sess->filelink.end())
+    {
+        struct stat st;
+        if(lstat(longname,&st)<0)
+        {
+            data.CreateAction = 2;
+            fid = creat(longname,data6.Permissions);
+            //close(fid);
+            //fid = open(longname,O_RDWR);
+            data.ReturnedLevel = 512;
+        }
+        else
+        {
+            data.CreateAction = 1;
+               fid = open(longname,O_RDWR);
+        }
+        sess->filelink[fid] = string(longname);
+    }
     chmod(longname,a);
     get_info_byname(longname,&basic);
     para32r->wordcount = 10;
@@ -235,12 +270,20 @@ int trans2_sub6_0x209(SESSION *sess,rqpara32 *para32,rqdata32 *data32,rppara32 *
     para32r->words.TotalParameterCount = 2;
     
     data32r->bytecount = 117;
-    data.CreateAction = 1;
+    //data.CreateAction = 1;
     data.Fid = fid;
     data.OplockFlags = 1;
+        data11.Fid = fid;
     memcpy((data32r->bytes.s)+5,&data,sizeof(data));
     memcpy((data32r->bytes.s)+5+sizeof(data),&basic,sizeof(basic));//bytecount 后面是u16_t的reserved
     printf("0x32 setup = 6 0x209\n"); //open
+    
+    OPEN_PSX_REQ data61;
+    char s[100]="0200000032000000a4810000000000000002",d[100] = {0};
+    itostr(s,d);
+    memcpy(&data61,d,sizeof(data61));
+
+    //getchar();
 }
 int trans2_sub6_0x20a(SESSION *sess,rqpara32 *para32,rqdata32 *data32,rppara32 *para32r,rpdata32 *data32r)//setup = 6 0x20a
 {
@@ -283,8 +326,23 @@ int trans2_sub8_0x200(SESSION *sess,rqpara32 *para32,rqdata32 *data32,rppara32 *
     ZERO(basic);
     struct Trans2_Parameters8 transpara;
     ZERO(transpara);
-    memcpy(&transpara,sess->_buf+para32->words.ParameterOffset,para32->words.DataCount);
+    memcpy(&transpara,sess->_buf+para32->words.ParameterOffset,para32->words.ParameterCount);
     memcpy(&basic,sess->_buf+para32->words.DataOffset,sizeof(basic));
+    map<int,string>::iterator it;
+    it = sess->filelink.find(transpara.FID);
+    char longname[100] = {0};
+    strcpy(longname,it->second.c_str());
+    if(basic.access_time!=0xffffffff)
+    {
+        struct timespec spec = cifs_NTtimeToUnix(basic.access_time);
+        long time =cifs_UnixTimeToNT(spec);
+        struct timeval tval[2];
+        tval[0].tv_sec = spec.tv_sec;
+        tval[0].tv_usec = spec.tv_nsec/1000;
+        tval[1].tv_sec = spec.tv_sec;
+        tval[1].tv_usec = spec.tv_nsec/1000;
+        utimes(longname,tval);
+    }
     char writebuf[1024] = "\000\000\000:\377SMB2\000\000\000\000\200\003\300\000\000\000\000\000\000\000\000\000\000\000\000\001\000vzd\000\v\000\n\002\000\000\000\000\000\002\000\070\000\000\000\000\000\000\000\000\000\000\000\003\000";
     memcpy(&rh,writebuf,4);
     sess->_writelen = ntohl(rh);

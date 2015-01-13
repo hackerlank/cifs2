@@ -69,8 +69,6 @@ int do_gdfs_ref(SESSION *sess,rqpara32 *para32,rqdata32 *data32,rppara32 *para32
     sess->relloc_writebuf();
     memcpy(sess->_writebuf,&rn,4);
     memcpy(sess->_writebuf+4,&(sess->_writehead),sizeof(smbhead_t));
-    memcpy(sess->_writebuf+4+sizeof(smbhead_t),para32r,sizeof(*para32r));
-    memcpy(sess->_writebuf+4+sizeof(smbhead_t)+sizeof(*para32r),data32r,2+data32r->bytecount);
     printf("do_gdfs_ref\n");
     return 1;
 }
@@ -87,6 +85,9 @@ int do_qpath_info(SESSION *sess,rqpara32 *para32,rqdata32 *data32,rppara32 *para
         case SMB_QUERY_FILE_UNIX_BASIC:
             trans2_sub5_0x200(sess,para32,data32,para32r,data32r);
             break;
+        case SMB_QUERY_POSIX_ACL:
+            trans2_sub5_0x204(sess,para32,data32,para32r,data32r);
+            break;
         default:
             break;
     }
@@ -97,7 +98,7 @@ int do_qpath_info(SESSION *sess,rqpara32 *para32,rqdata32 *data32,rppara32 *para
     if(para32r->wordcount>0)
         memcpy(sess->_writebuf+4+sizeof(smbhead_t),para32r,sizeof(*para32r));
     if(data32r->bytecount>0)
-        memcpy(sess->_writebuf+4+sizeof(smbhead_t)+sizeof(*para32r),data32r,2+data32r->bytecount);
+        memcpy(sess->_writebuf+4+sizeof(smbhead_t)+sizeof(*para32r),data32r,para32r->words.DataCount);
     printf("do_qpath_info\n");
 }
 int do_spath_info(SESSION *sess,rqpara32 *para32,rqdata32 *data32,rppara32 *para32r,rpdata32 *data32r)

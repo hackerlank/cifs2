@@ -9,5 +9,6 @@
 int Utf8ToUnicode(char * inbuff,char *outbuff, size_t *inlen, size_t *outlen);
 int UnicodeToUtf8(char * inbuff,char *outbuff, size_t *inlen, size_t *outlen);
 int itostr(char *value,char *str);
+int strcpy_unicode(char *src,char *dst);
 #endif	/* MYICONV_H */
 

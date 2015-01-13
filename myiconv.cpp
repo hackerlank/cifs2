@@ -73,3 +73,20 @@ int itostr(char *value,char *str)
         sscanf(value+2*i,"%2x",&str[i]);
     }
 }
+
+int strcpy_unicode(char *dst,char *src)
+{
+    if(src==dst)
+        return 0;
+    int i;
+    for(i=0;;i+=2)
+    {
+        dst[i] = src[i];
+        dst[i+1] = src[i+1];
+        if(src[i]==0&&src[i+1]==0)
+        {
+            break;
+        }
+    }
+    return i;
+}

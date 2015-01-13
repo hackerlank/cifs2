@@ -20,7 +20,7 @@ using namespace std;
 /*
  * 
  */
-vector<SESSION> ses;
+SESSION ses[10] = {0};
 int server_fd;
 struct epoll_event ev,events[EPOLL_SIZE];
 void *client_get_message(void *arg);
@@ -48,13 +48,15 @@ void *epoll_listen(void *arg)
                 ev.data.fd = clientfd;
                 ev.events = EPOLLIN;
                 CHK(epoll_ctl(epfd, EPOLL_CTL_ADD, clientfd, &ev));
-                SESSION sess(clientfd);
+                //SESSION sess(clientfd);
                 //sess._cfd = clientfd;
-                ses.push_back(sess);
-                cout<<"a new client come in,the fd is"<<sess._cfd<<endl;
+                static int flag = 0;
+                ses[flag] = SESSION(clientfd);
+                flag++;
+                cout<<"a new client come in,the fd is"<<clientfd<<endl;
             }
             else{
-                for(int j=0;j<ses.size();j++)
+                for(int j=0;j<10;j++)
                 {
                     if(ses[j]._cfd=events[i].data.fd)
                     {
@@ -69,17 +71,7 @@ void *epoll_listen(void *arg)
     close(server_fd);
     close(epfd);
 }
-void sswswswswswsswswws()
-{
-    char s[100] = {0};
-    char d[100] = "0200000032000000a4810000000000000002";
-    sscanf(d,"%2x",&s[0]);
-    getchar();
-}
 int main(int argc, char** argv) {
-    //sswswswswswsswswws();
-    char s[100]="0200000032000000a4810000000000000002",d[100] = {0};
-    itostr(s,d);
     server_fd = socket(AF_INET,SOCK_STREAM,0);
     if(server_fd<0)
         perror("socket");

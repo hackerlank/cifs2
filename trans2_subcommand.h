@@ -16,6 +16,7 @@ int trans2_sub3_0x200(SESSION *sess,rqpara32 *para32,rqdata32 *data32,rppara32 *
 int trans2_sub3_0x201(SESSION *sess,rqpara32 *para32,rqdata32 *data32,rppara32 *para32r,rpdata32 *data32r);
 int trans2_sub5_0x107(SESSION *sess,rqpara32 *para32,rqdata32 *data32,rppara32 *para32r,rpdata32 *data32r);
 int trans2_sub5_0x200(SESSION *sess,rqpara32 *para32,rqdata32 *data32,rppara32 *para32r,rpdata32 *data32r);
+int trans2_sub5_0x204(SESSION *sess,rqpara32 *para32,rqdata32 *data32,rppara32 *para32r,rpdata32 *data32r);//SMB_QUERY_POSIX_ACL
 int trans2_sub6_0x209(SESSION *sess,rqpara32 *para32,rqdata32 *data32,rppara32 *para32r,rpdata32 *data32r);//setup = 6 0x209
 int trans2_sub6_0x20a(SESSION *sess,rqpara32 *para32,rqdata32 *data32,rppara32 *para32r,rpdata32 *data32r);//setup = 6 0x20a
 int trans2_sub8_0x3fc(SESSION *sess,rqpara32 *para32,rqdata32 *data32,rppara32 *para32r,rpdata32 *data32r);//setup = 8 0x200

@@ -178,8 +178,9 @@ void do_sessionsetup(SESSION *sess)
     sess->_writehead.Protocol[1] = 'S';
     sess->_writehead.Protocol[2] = 'M';
     sess->_writehead.Protocol[3] = 'B';
-    sess->_writehead.UID = 100;
-    
+    static unsigned short uid = 100;
+    sess->_writehead.UID = uid;
+    uid+=100;
     para73r.WordCount = 3;
     para73r.Words.Action = 0;
     para73r.Words.AndXCommand = 0xFF;
@@ -499,4 +500,52 @@ void do_echo(SESSION *sess)//0x2b
     CHK3(ret,write(sess->_cfd,writebuf,rh+4),"sendResponse0x2E");
     free(data);
     printf("sendResponse0x2B,writebytes:%d\n",ret);
+}
+void do_rename(SESSION *sess)//0x07
+{
+    rqpara07 rqpara = {0};
+    rqdata07 rqdata = {0};
+    int ret;
+    sess->_writehead.Command = sess->_head.Command;
+    sess->_writehead.Status = 0;
+    sess->_writehead.Flags = 0x80;
+    sess->_writehead.Flags2 = 0xc003;
+    sess->_writehead.Tid = sess->_head.Tid;
+    sess->_writehead.MID = sess->_head.MID;
+    sess->_writehead.UID = sess->_head.UID;
+    
+    memcpy(&rqpara,sess->getbuf(),sizeof(rqpara));
+    sess->_offset += sizeof(rqpara);
+    rqdata.bytecount = *(unsigned short*)sess->getbuf();
+    sess->_offset += 2;
+    rqdata.BufferFormate1 = *(unsigned char*)sess->getbuf();
+    sess->_offset += 1;
+    char u_oldname[100] = {0},u_newname[100] = {0},oldname[100] = {0},newname[100] = {0};
+    char longoldname[200] = {0},longnewname[200] = {0};
+    int oldnamelen = strcpy_unicode(u_oldname,sess->_buf+35+sizeof(rqpara));
+    size_t len1 = oldnamelen+2;
+    size_t len2 = len1/2;
+    UnicodeToUtf8(u_oldname,oldname,&len1,&len2);
+    strcpy(longoldname,sess->_path);
+    strcat(longoldname,oldname);
+    sess->_offset += oldnamelen+2;
+    rqdata.BufferFormate2 = *(unsigned char*)sess->getbuf();
+    sess->_offset += 1;
+    
+    
+    int newnamelen = strcpy_unicode(u_newname,sess->getbuf()+1);
+    len1 = newnamelen+2;
+    len2 = len1/2;
+    UnicodeToUtf8(u_newname,newname,&len1,&len2);
+    strcpy(longnewname,sess->_path);
+    strcat(longnewname,newname);
+    rename(longoldname,longnewname);
+    printf("h");
+    sess->_writelen = 35;
+    char writebuf[39] = {0};
+    unsigned int rn = htonl(35);
+    memcpy(writebuf,&rn,4);
+    memcpy(writebuf+4,&(sess->_writehead),32);
+    CHK3(ret,write(sess->_cfd,writebuf,sess->_writelen+4),"sendResponse0x07");
+    printf("h");
 }

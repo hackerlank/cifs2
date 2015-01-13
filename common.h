@@ -76,8 +76,8 @@ public:
     unsigned int _offset;
     unsigned int _writeoffset;
     unsigned short _dialect;
-    unsigned char *_buf;
-    unsigned char *_writebuf;
+    char *_buf;
+    char *_writebuf;
     char _path[200];
     unsigned int _sess_key;
     smbhead_t _head;
@@ -108,19 +108,14 @@ public:
 //            free(_buf);
 //            _buf = NULL;
 //        }
-        _buf = (unsigned char*)realloc(_buf,this->_len);
+        _buf = (char*)realloc(_buf,this->_len);
         bzero(_buf,this->_len);
         return _buf;
     }
     void* relloc_writebuf()
     {
         _writeoffset = 0;
-        if(_writebuf!=NULL)
-        {
-            free(_writebuf);
-            _writebuf = NULL;
-        }
-        _writebuf = (unsigned char*)realloc(_writebuf,this->_writelen+4);
+        _writebuf = (char*)realloc(_writebuf,this->_writelen+4);
         bzero(_writebuf,this->_writelen+4);
         return _writebuf;
     }
@@ -130,7 +125,7 @@ public:
         memcpy(&_head,_buf+_offset,32);
         _offset+=32;
     }
-    unsigned char *getbuf()
+    char *getbuf()
     {
         return _buf+_offset;
     }

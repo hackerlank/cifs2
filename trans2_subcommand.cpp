@@ -67,6 +67,7 @@ int trans2_sub3_0x105(SESSION *sess,rqpara32 *para32,rqdata32 *data32,rppara32 *
     memcpy(&attr_file,(*data32r).bytes.s,sizeof(attr_file));
     unsigned char *fsname = (unsigned char *)calloc(1,attr_file.FileSystemNameLen+1);
     memcpy(fsname,data32r->bytes.s+12,attr_file.FileSystemNameLen);
+    free(fsname);
     printf("0x32 setup = 3 0x105\n");
 }
 int trans2_sub3_0x200(SESSION *sess,rqpara32 *para32,rqdata32 *data32,rppara32 *para32r,rpdata32 *data32r)
@@ -120,11 +121,12 @@ int trans2_sub4(SESSION *sess,rqpara32 *para32,rqdata32 *data32,rppara32 *para32
 }
 int trans2_sub5_0x107(SESSION *sess,rqpara32 *para32,rqdata32 *data32,rppara32 *para32r,rpdata32 *data32r)
 {
-   unsigned char writebuf[2048];
+   unsigned char writebuf[2048] = {0};
    bzero(writebuf,2048);
    memcpy(writebuf,"\000\000\000\206\377SMB2\000\000\000\000\200\003\300\000\000\000\000\000\000\000\000\000\000\000\000\001\000\252fd\000Q\000\n\002\000J\000\000\000\002\000\070\000\000\000J\000<\000\000\000\000\000O\000\000\000\000\000\000\202\017\236\002P\363\317\001\202\017\236\002P\363\317\001\224\271\240\272\241\371\317\001\224\271\240\272\241\371\317\001\020\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\001\000\000\000\000\001\000\000\000\000\000\000\002\000\000\000\\\000\000\000\000\000\000\000\000\000\000",
            sizeof("\000\000\000\206\377SMB2\000\000\000\000\200\003\300\000\000\000\000\000\000\000\000\000\000\000\000\001\000\252fd\000Q\000\n\002\000J\000\000\000\002\000\070\000\000\000J\000<\000\000\000\000\000O\000\000\000\000\000\000\202\017\236\002P\363\317\001\202\017\236\002P\363\317\001\224\271\240\272\241\371\317\001\224\271\240\272\241\371\317\001\020\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\001\000\000\000\000\001\000\000\000\000\000\000\002\000\000\000\\\000\000\000\000\000\000\000\000\000\000"));
    memcpy(&(sess->_writehead),writebuf+4,sizeof(smbhead_t));
+   sess->_writehead.UID = sess->_head.UID;
    sess->_writehead.MID = sess->_head.MID;
    fileallinfo finfo;
    ZERO(finfo);
@@ -132,8 +134,8 @@ int trans2_sub5_0x107(SESSION *sess,rqpara32 *para32,rqdata32 *data32,rppara32 *
    memcpy(&rh,writebuf,4);
    sess->_writelen = ntohl(rh);
    memcpy(para32r,writebuf+4+sizeof(smbhead_t),sizeof(*para32r));
-   memcpy(data32r,writebuf+4+sizeof(smbhead_t)+sizeof(*para32r),sizeof(*data32r));
-   memcpy(&finfo,writebuf+4+(*para32r).words.DataOffset,sizeof(finfo));
+   memcpy(data32r,writebuf+4+sizeof(smbhead_t)+sizeof(*para32r),para32r->words.DataCount);
+//   memcpy(&finfo,writebuf+4+(*para32r).words.DataOffset,sizeof(finfo));
    printf("0x32 setup = 5 0x107\n");
    return 1;
 }
@@ -156,6 +158,7 @@ int trans2_sub5_0x200(SESSION *sess,rqpara32 *para32,rqdata32 *data32,rppara32 *
     if(-1==get_info_byname(longname2,&basic))
     {
         sess->_writehead.Status = STATUS_OBJECT_NOT_FOUND;
+        sess->_writelen = 35;
         return 0;
     }
     int ret;
@@ -177,17 +180,76 @@ int trans2_sub5_0x200(SESSION *sess,rqpara32 *para32,rqdata32 *data32,rppara32 *
     printf("0x32 setup = 5 0x200\n");
     return 0;
 }
+int trans2_sub5_0x204(SESSION *sess,rqpara32 *para32,rqdata32 *data32,rppara32 *para32r,rpdata32 *data32r)//SMB_QUERY_POSIX_ACL
+{
+    struct Trans2_Parameters5 trans2_para5;
+    ZERO(trans2_para5);
+    memcpy(&trans2_para5,sess->_buf+(*para32).words.ParameterOffset,para32->words.ParameterCount); 
+    //unsigned char name[100] = {0};
+    char name[100] = {0};
+    char longname2[1024]={0};
+    memcpy(longname2,"/home/lmx/test",sizeof("/home/lmx/test"));
+    //wcscpy(name,trans2_para5.FileName);
+    size_t len = 100;
+    size_t len2 = 100;
+    char Filename[1024] = {0};
+    UnicodeToUtf8((char*)trans2_para5.FileName,name,&len,&len2);
+    strcat(longname2,name);
+    int ret;
+    //test
+    sess->_writelen = 96;
+    para32r->wordcount =10;
+    para32r->words.DataCount = 36;
+    para32r->words.DataDisplacement = 0;
+    para32r->words.DataOffset = 60;
+    para32r->words.ParameterDisplacement = 0;
+    para32r->words.ParameterCount = 2;
+    para32r->words.ParameterOffset = 56;
+    para32r->words.SetupCount = 0;
+    para32r->words.TotalDataCount = 36;
+    para32r->words.TotalParameterCount = 2;
+    
+    data32r->bytecount = 41;
+    //memcpy(data32r->bytes.s+5,&basic,sizeof(basic));
+    struct stat buf;
+    bzero(&buf,sizeof(buf));
+    if(lstat(longname2,&buf)<0)
+        perror("0x32 setup = 5 0x024");
+    uint8_t permission1 = ((buf.st_mode&0x1c0)/64)%8,permission2 = (buf.st_mode&0x38)/8,permission3 = (buf.st_mode)&0x7;
+    struct posix_ace ace[3];
+    
+    //struct posix_ace * ace = (struct posix_ace *)calloc(3, sizeof(struct posix_ace));
+    
+    
+    struct posix_acl acl;
+    bzero(&ace[0],30);
+    bzero(&acl,sizeof(acl));
+    acl.access_entry_count = 3;
+    acl.default_entry_count = 0;
+    acl.version = 1;
+    ace[0].cifs_e_perm = permission1;
+    ace[0].cifs_e_tag = 1;
+    ace[0].cifs_uid =buf.st_uid;
+    ace[1].cifs_e_perm = permission2;
+    ace[1].cifs_e_tag = 4;
+    ace[1].cifs_uid = buf.st_gid;
+    ace[2].cifs_e_perm = permission3;
+    ace[2].cifs_e_tag = 32;
+    printf("0x32 setup = 5 0x204\n");
+    memcpy(data32r->bytes.s+5,&acl,sizeof(acl));
+    memcpy(data32r->bytes.s+11,&ace[0],sizeof(struct posix_ace)*3);
+}
 int trans2_sub6_0x209(SESSION *sess,rqpara32 *para32,rqdata32 *data32,rppara32 *para32r,rpdata32 *data32r)//setup = 6 0x209
 {
-    //test
-    struct FILEINFO_UNIX_BASIC basic2 = {0};
-        OPEN_PSX_RSP data11;
-    char f[] = "0100a3310200000000020000000000000000000000000000000000006dbf105fbd2bd001acea0e5fbd2bd001acea0e5fbd2bd001f501000000000000f5010000000000000000000000000000000000000000000000000000680b240000000000a4010000000000000100000000000000";
-    char t[200] = {0};
-    itostr(f,t);
-    memcpy(&data11,t,sizeof(data11));
-    memcpy(&basic2,t+sizeof(data11),sizeof(basic2));
-    //end of test
+//    //test
+//    struct FILEINFO_UNIX_BASIC basic2 = {0};
+//        OPEN_PSX_RSP data11;
+//    char f[] = "0100a3310200000000020000000000000000000000000000000000006dbf105fbd2bd001acea0e5fbd2bd001acea0e5fbd2bd001f501000000000000f5010000000000000000000000000000000000000000000000000000680b240000000000a4010000000000000100000000000000";
+//    char t[200] = {0};
+//    itostr(f,t);
+//    memcpy(&data11,t,sizeof(data11));
+//    memcpy(&basic2,t+sizeof(data11),sizeof(basic2));
+//    //end of test
     struct Trans2_Parameters6 para6;
     ZERO(para6);
     char unicodename[100] = {0};
@@ -273,15 +335,14 @@ int trans2_sub6_0x209(SESSION *sess,rqpara32 *para32,rqdata32 *data32,rppara32 *
     //data.CreateAction = 1;
     data.Fid = fid;
     data.OplockFlags = 1;
-        data11.Fid = fid;
     memcpy((data32r->bytes.s)+5,&data,sizeof(data));
     memcpy((data32r->bytes.s)+5+sizeof(data),&basic,sizeof(basic));//bytecount 后面是u16_t的reserved
     printf("0x32 setup = 6 0x209\n"); //open
     
-    OPEN_PSX_REQ data61;
-    char s[100]="0200000032000000a4810000000000000002",d[100] = {0};
-    itostr(s,d);
-    memcpy(&data61,d,sizeof(data61));
+//    OPEN_PSX_REQ data61;
+//    char s[100]="0200000032000000a4810000000000000002",d[100] = {0};
+//    itostr(s,d);
+//    memcpy(&data61,d,sizeof(data61));
 
     //getchar();
 }

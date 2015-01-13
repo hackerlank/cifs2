@@ -65,7 +65,7 @@ struct Trans2_Parameters5
 {
         unsigned short InformationLevel;
         unsigned int Reserved;
-        unsigned char FileName[26];
+        unsigned char FileName[100];
 };
 
 typedef struct
@@ -126,6 +126,17 @@ struct Trans2_Parameters6//0x0006 request
  {
      unsigned short EaErrorOffset;
  };
+struct posix_ace { /* access control entry (ACE) */
+        __u8  cifs_e_tag;
+        __u8  cifs_e_perm;
+        __le64 cifs_uid; /* or gid */
+} __attribute__((packed));
+
+struct posix_acl { /* access conrol list  (ACL) */
+        __le16  version;
+        __le16  access_entry_count;  /* access ACL - count of entries */
+        __le16  default_entry_count; /* default ACL - count of entries */
+};
 #pragma pack()
 #endif	/* TRANS2_H */
 

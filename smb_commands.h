@@ -23,6 +23,7 @@ void do_write_andx(SESSION *sess);
 void do_read_andx(SESSION *sess);
 void do_echo(SESSION *sess);
 void do_close(SESSION *sess);
+void do_rename(SESSION *sess);//0x07
 static smbcmd_t smbcmds[] = {
 	/* 访问控制命令 */
     {SMB_COM_NEGOTIATE,do_negotiate},
@@ -33,7 +34,8 @@ static smbcmd_t smbcmds[] = {
     {SMB_COM_WRITE_ANDX,do_write_andx},
     {SMB_COM_READ_ANDX,do_read_andx},
     {SMB_COM_ECHO,do_echo},
-    {SMB_COM_CLOSE,do_close}
+    {SMB_COM_CLOSE,do_close},
+    {SMB_COM_RENAME,do_rename}
 };
 
 

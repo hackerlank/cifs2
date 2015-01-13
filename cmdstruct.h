@@ -4,7 +4,8 @@
  *
  * Created on 2014年12月22日, 下午2:33
  */
-
+#include <string>
+#include <iostream>
 #ifndef CMDSTRUCT_H
 #define	CMDSTRUCT_H
 #pragma pack(1)
@@ -224,7 +225,7 @@ typedef struct
     unsigned short bytecount;
     struct
     {
-        unsigned char s[4000];
+        char s[4000];
     }bytes;
 }rpdata32;
 
@@ -483,6 +484,19 @@ typedef struct
         unsigned char Data[1];
     }bytes;
 }rpdata2B;
+typedef struct//0x07
+{
+    unsigned char wordcount;
+    unsigned short searchattributes;
+}rqpara07;
+typedef struct//0x07
+{
+    unsigned short bytecount;
+    unsigned char BufferFormate1;//0x04 ascill
+    char oldfilename[1];
+    unsigned char BufferFormate2;//0x04 ascill
+    char newfilename[1];
+}rqdata07;
 #pragma pack()
 #endif	/* CMDSTRUCT_H */
 
